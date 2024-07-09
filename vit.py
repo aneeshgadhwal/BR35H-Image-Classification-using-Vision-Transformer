@@ -10,20 +10,174 @@ import matplotlib.pyplot as plt
 
 # data loading
 
-num_classes = 100
-input_shape = (32,32,3)
-(x_train, y_train), (x_test, y_test) = keras.datasets.cifar100.load_data()
+# height, width, channels
+input_shape = (224,224)
+
+# visualize the image and its region of interest and crop it out
+
+import cv2, os
+dir_no = '/kaggle/input/brain-tumor-detection/no'
+dir_yes = '/kaggle/input/brain-tumor-detection/yes'
+y = []
+X_train = []
+for i in os.listdir(dir_no):
+    y.append(0)
+    path_to_image = dir_no + '/' + i
+    #print(path_to_image)
+    #break
+    image = cv2.imread(path_to_image)
+    print(image.shape)
+    plt.subplot(2,2,1)
+    plt.title("1")
+    plt.imshow(image)
+    # Convert the image to grayscale
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply GaussianBlur to reduce noise (optional but recommended)
+    gray_blurred = cv2.GaussianBlur(gray_image, (5, 5), 0)
+
+    # Perform Canny edge detection
+    edges = cv2.Canny(gray_blurred, 50, 150)
+
+    # Find contours in the edge-detected image
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Find the largest contour (assuming it corresponds to the MRI scan)
+    largest_contour = max(contours, key=cv2.contourArea)
+
+    # Find the bounding box coordinates
+    x1, y1, w, h = cv2.boundingRect(largest_contour)
+    print(x1,y1,w,h)
+
+    # Crop the original color image using the bounding box coordinates
+    cropped_image = image[y1:y1+h, x1:x1+w]
+    print("cropped image shape", cropped_image.shape)
+    plt.subplot(2,2,2)
+    plt.title("2")
+    plt.imshow(cropped_image)
+    # return the numpy array as h,w,c
+    image = cv2.resize(image, input_shape)
+    print(image.shape)
+    plt.subplot(2,2,3)
+    plt.title("3")
+    plt.imshow(image)
+    cropped_image = cv2.resize(cropped_image, input_shape)
+    print(cropped_image.shape)
+    plt.subplot(2,2,4)
+    plt.title("4")
+    plt.imshow(cropped_image)
+    #print(image)
+    break
+    X_train.append(image)
+
+for i in os.listdir(dir_yes):
+    y.append(1)
+    path_to_image = dir_yes + '/' + i
+    #print(path_to_image)
+    #break
+    image = cv2.imread(path_to_image, cv2.IMREAD_GRAYSCALE)
+    # return the numpy array as h,w,c
+    
+    break
+    X_train.append(image)
+
+# prepaing the training data
+import cv2, os
+dir_no = '/kaggle/input/brain-tumor-detection/no'
+dir_yes = '/kaggle/input/brain-tumor-detection/yes'
+y = []
+X_train = []
+for i in os.listdir(dir_no):
+    y.append(0)
+    path_to_image = dir_no + '/' + i
+    #print(path_to_image)
+    #break
+    image = cv2.imread(path_to_image)
+    
+    # Convert the image to grayscale
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply GaussianBlur to reduce noise (optional but recommended)
+    gray_blurred = cv2.GaussianBlur(gray_image, (5, 5), 0)
+
+    # Perform Canny edge detection
+    edges = cv2.Canny(gray_blurred, 50, 150)
+
+    # Find contours in the edge-detected image
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Find the largest contour (assuming it corresponds to the MRI scan)
+    largest_contour = max(contours, key=cv2.contourArea)
+
+    # Find the bounding box coordinates
+    x1, y1, w, h = cv2.boundingRect(largest_contour)
+    #print(x1,y1,w,h)
+
+    # Crop the original color image using the bounding box coordinates
+    cropped_image = image[y1:y1+h, x1:x1+w]
+    
+    cropped_image = cv2.resize(cropped_image, input_shape)
+    
+    X_train.append(cropped_image)
+    
+
+for i in os.listdir(dir_yes):
+    y.append(1)
+    path_to_image = dir_yes + '/' + i
+    image = cv2.imread(path_to_image)
+    # return the numpy array as h,w,c
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply GaussianBlur to reduce noise (optional but recommended)
+    gray_blurred = cv2.GaussianBlur(gray_image, (5, 5), 0)
+
+    # Perform Canny edge detection
+    edges = cv2.Canny(gray_blurred, 50, 150)
+
+    # Find contours in the edge-detected image
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Find the largest contour (assuming it corresponds to the MRI scan)
+    largest_contour = max(contours, key=cv2.contourArea)
+
+    # Find the bounding box coordinates
+    x1, y1, w, h = cv2.boundingRect(largest_contour)
+    #print(x1,y1,w,h)
+
+    # Crop the original color image using the bounding box coordinates
+    cropped_image = image[y1:y1+h, x1:x1+w]
+    
+    cropped_image = cv2.resize(cropped_image, input_shape)
+    X_train.append(cropped_image)
+
+print(len(X_train))
+print(len(y))
+X_train = np.array(X_train)
+y = np.array(y)
+
+
+
+print("shape of features are {}".format(X_train.shape))
+print("shape of target are {}".format(y.shape))
+
+num_classes = 2
+input_shape = X_train[0].shape
+#print(input_shape)
+from sklearn.model_selection import train_test_split
+
+x_train, x_test, y_train, y_test = train_test_split(X_train, y, random_state=42, test_size=0.1)
 print("shape of training sample are {}, {}".format(x_train.shape, y_train.shape))
 print("shape of testing sample are {}, {}".format(x_test.shape, y_test.shape))
+
 
 # Variable and hyperparameters
 
 learning_rate = 0.001
 weight_decay = 0.0001
-batch_size = 256
-num_epochs = 500  
-image_size = 72  
-patch_size = 6 
+batch_size = 32
+num_epochs = 100  
+image_size = 224  
+patch_size = 16 
 num_patches = (image_size // patch_size) ** 2
 projection_dim = 64
 num_heads = 4
@@ -42,7 +196,6 @@ mlp_head_units = [
 data_augmentation = keras.Sequential(
     [
         layers.Normalization(),
-        layers.Resizing(image_size, image_size),
         layers.RandomFlip("horizontal"),
         layers.RandomRotation(factor=0.02),
         layers.RandomZoom(height_factor=0.2, width_factor=0.2),
@@ -160,7 +313,6 @@ def create_vit_classifier():
     # Create multiple layers of the Transformer block.
     for _ in range(transformer_layers):
         # Layer normalization 1.
-        #print("layer of the transformer")
         x1 = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
         # Create a multi-head attention layer.
         attention_output = layers.MultiHeadAttention(
@@ -174,25 +326,21 @@ def create_vit_classifier():
         x3 = mlp(x3, hidden_units=transformer_units, dropout_rate=0.1)
         # Skip connection 2.
         encoded_patches = layers.Add()([x3, x2])
-    #print("after layer of the transformer")
 
     # Create a [batch_size, projection_dim] tensor.
     representation = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
     representation = layers.Flatten()(representation)
     representation = layers.Dropout(0.5)(representation)
-    #print("before the mlp layer")
     # Add MLP.
     features = mlp(representation, hidden_units=mlp_head_units, dropout_rate=0.5)
     # Classify outputs.
-    logits = layers.Dense(num_classes)(features)
-    #print("before the model")
+    logits = layers.Dense(1, activation='sigmoid')(features)
     # Create the Keras model.
     model = keras.Model(inputs=inputs, outputs=logits)
-    #print("before returning the model")
     return model
 
 
-# model complie and fitting
+# model compile and fitting
 
 def run_experiment(model):
     optimizer = keras.optimizers.AdamW(
@@ -201,10 +349,9 @@ def run_experiment(model):
 
     model.compile(
         optimizer=optimizer,
-        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss=keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=[
-            keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
-            keras.metrics.SparseTopKCategoricalAccuracy(5, name="top-5-accuracy"),
+            keras.metrics.BinaryAccuracy(name="accuracy"),
         ],
     )
 
@@ -226,9 +373,8 @@ def run_experiment(model):
     )
     
     model.load_weights(checkpoint_filepath)
-    _, accuracy, top_5_accuracy = model.evaluate(x_test, y_test, batch_size=256)
+    _, accuracy = model.evaluate(x_test, y_test, batch_size=256)
     print(f"Test accuracy: {round(accuracy * 100, 2)}%")
-    print(f"Test top 5 accuracy: {round(top_5_accuracy * 100, 2)}%")
 
     return history
 
@@ -249,6 +395,4 @@ def plot_history(item):
 
 
 plot_history("loss")
-plot_history("top-5-accuracy")
-
-
+plot_history("accuracy")

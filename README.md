@@ -37,12 +37,12 @@ Let's break down the key components and functionalities of the code:
 
 ## Results
 - Trained on GPU P100
-- Trained for epochs == 100
-- Test accuracy == 92.33%%
+- Trained for epochs : 100
+- Test accuracy : 92.33%%
 
 <be>
 <br>
 
-| <img src="Image/Top5accuracy_vit.png" alt="The Vision Transformer Train and Validation loss over Epochs" width="800" height="400"> | <img src="Image/Loss_vit.png" alt="The Vision Transformer Train and Validation Top-5-accuracy over Epochs" width="800" height="400">
+| <img src="Image/br35h-vit_accuracy.JPG" alt="The Vision Transformer Train and Validation Accuracy over Epochs" width="800" height="400"> | <img src="Image/br35h-vit_loss.JPG" alt="The Vision Transformer Train and Validation loss over Epochs" width="800" height="400">
 | :--: | :--: |
-| *The Plot of the Vision Transformer Train and Validation loss over Epochs.* | *The Plot of the Vision Transformer Train and Validation Top-5 accuracy over Epochs.* |
+| *The Plot of the Vision Transformer Train and Validation Accuracy over Epochs.* | *The Plot of the Vision Transformer Train and Validation loss over Epochs.* |
